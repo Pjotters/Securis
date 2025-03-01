@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
-import cv2
-import numpy as np
-from tensorflow.keras.models import load_model
+from flask import Flask, request, jsonify # type: ignore
+import cv2 # type: ignore
+import numpy as np # type: ignore
+from tensorflow.keras.models import load_model # type: ignore
 import base64
 import os
 
