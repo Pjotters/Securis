@@ -10,7 +10,13 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Dit staat cross-origin requests toe
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["https://pjotters.github.io"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 detector = ImprovedIrisDetector()
 db = SimpleDB()
 

@@ -13,31 +13,40 @@ async function startCamera() {
         video.srcObject = stream;
     } catch (err) {
         console.error('Camera toegang mislukt:', err);
+        result.textContent = 'Camera toegang mislukt';
     }
 }
 
 // Verify iris
 async function verifyIris() {
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
-    
-    const imageData = canvas.toDataURL('image/jpeg');
-    
     try {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageData = canvas.toDataURL('image/jpeg');
+        
         const response = await fetch(`${API_BASE_URL}/api/verify-iris`, {
             method: 'POST',
+            mode: 'cors',
+            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ image: imageData })
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         result.textContent = data.authorized ? 'Toegang verleend' : 'Toegang geweigerd';
     } catch (err) {
         console.error('Verificatie mislukt:', err);
-        result.textContent = 'Verificatie mislukt';
+        result.textContent = 'Verificatie mislukt: ' + err.message;
     }
 }
 
