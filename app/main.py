@@ -5,10 +5,23 @@ from db import SimpleDB
 import base64
 import cv2
 import os
+from api_security import rate_limit
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = Flask(__name__)
 detector = ImprovedIrisDetector()
 db = SimpleDB()
+
+SWAGGER_URL = '/api/docs'
+API_URL = '/static/swagger.json'
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={'app_name': "Iris Scanner API"}
+)
+
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 @app.route('/')
 def index():
@@ -19,6 +32,7 @@ def register():
     return render_template('register.html')
 
 @app.route('/api/register-iris', methods=['POST'])
+@rate_limit
 def register_iris():
     try:
         data = request.json
@@ -43,6 +57,7 @@ def register_iris():
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/verify-iris', methods=['POST'])
+@rate_limit
 def verify_iris():
     try:
         data = request.json
