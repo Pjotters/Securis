@@ -1,7 +1,6 @@
 let video = document.getElementById('video');
 let canvas = document.getElementById('canvas');
 let result = document.querySelector('.scan-status');
-let scanButton = document.getElementById('scan');
 
 // Start camera
 async function startCamera() {
@@ -13,8 +12,11 @@ async function startCamera() {
     }
 }
 
-// Verify iris
-async function verifyIris() {
+// Registreer iris
+async function registerIris() {
+    const userId = prompt('Voer gebruikers-ID in:');
+    if (!userId) return;
+
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -23,21 +25,23 @@ async function verifyIris() {
     const imageData = canvas.toDataURL('image/jpeg');
     
     try {
-        const response = await fetch('/api/verify-iris', {
+        const response = await fetch('/api/register-iris', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ image: imageData })
+            body: JSON.stringify({ 
+                user_id: userId,
+                image: imageData 
+            })
         });
         const data = await response.json();
-        result.textContent = data.authorized ? 'Toegang verleend' : 'Toegang geweigerd';
+        result.textContent = data.message;
     } catch (err) {
-        console.error('Verificatie mislukt:', err);
-        result.textContent = 'Verificatie mislukt';
+        console.error('Registratie mislukt:', err);
+        result.textContent = 'Registratie mislukt';
     }
 }
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', startCamera);
-scanButton.addEventListener('click', verifyIris); 
+// Start camera wanneer de pagina laadt
+document.addEventListener('DOMContentLoaded', startCamera); 
