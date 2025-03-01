@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from scipy.spatial import distance
 
 class ImprovedIrisDetector:
     def __init__(self):

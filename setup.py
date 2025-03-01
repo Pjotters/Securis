@@ -12,6 +12,8 @@ setup(
         'protobuf==3.20.3',
         'tensorflow-cpu==2.7.0',
         'gunicorn==20.1.0',
-        'flask-swagger-ui==4.11.1'
+        'flask-swagger-ui==4.11.1',
+        'flask-cors==3.0.10',
+        'scipy==1.7.3'
     ],
 ) 
