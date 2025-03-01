@@ -1,6 +1,7 @@
 let video = document.getElementById('video');
 let canvas = document.getElementById('canvas');
 let result = document.querySelector('.scan-status');
+let registerBtn = document.getElementById('registerBtn');
 
 // Start camera
 async function startCamera() {
@@ -9,6 +10,7 @@ async function startCamera() {
         video.srcObject = stream;
     } catch (err) {
         console.error('Camera toegang mislukt:', err);
+        result.textContent = 'Camera toegang mislukt';
     }
 }
 
@@ -43,5 +45,8 @@ async function registerIris() {
     }
 }
 
-// Start camera wanneer de pagina laadt
-document.addEventListener('DOMContentLoaded', startCamera); 
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    startCamera();
+    registerBtn.addEventListener('click', registerIris);
+}); 
