@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
-from improved_detector import ImprovedIrisDetector
-from db import SimpleDB
+from app.detectors.improved_detector import ImprovedIrisDetector
+from app.utils.db import SimpleDB
 import base64
 import cv2
 import os
