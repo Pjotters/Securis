@@ -1,9 +1,8 @@
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const scanButton = document.getElementById('scan');
-const result = document.getElementById('result');
+let video = document.getElementById('video');
+let canvas = document.getElementById('canvas');
+let result = document.querySelector('.scan-status');
 
-// Camera opstarten
+// Start camera
 async function startCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -13,28 +12,36 @@ async function startCamera() {
     }
 }
 
-// Iris scan functie
-async function scanIris() {
+// Registreer iris
+async function registerIris() {
+    const userId = prompt('Voer gebruikers-ID in:');
+    if (!userId) return;
+
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
     
-    // Converteer naar base64 voor verzending naar backend
     const imageData = canvas.toDataURL('image/jpeg');
     
-    // Stuur naar backend voor analyse
     try {
-        const response = await fetch('/api/verify-iris', {
+        const response = await fetch('/api/register-iris', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ image: imageData })
+            body: JSON.stringify({ 
+                user_id: userId,
+                image: imageData 
+            })
         });
         const data = await response.json();
-        result.textContent = data.authorized ? 'Toegang verleend' : 'Toegang geweigerd';
+        result.textContent = data.message;
     } catch (err) {
-        console.error('Verificatie mislukt:', err);
+        console.error('Registratie mislukt:', err);
+        result.textContent = 'Registratie mislukt';
     }
-} 
+}
+
+// Start camera wanneer de pagina laadt
+document.addEventListener('DOMContentLoaded', startCamera); 

@@ -6,9 +6,15 @@
 <body>
     <div class="container">
         <h1>Iris Scanner Authenticatie</h1>
-        <video id="video" width="640" height="480" autoplay></video>
+        <div class="scan-container">
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+            <div class="scan-overlay">
+                <div class="scan-circle"></div>
+                <div class="scan-status">Plaats uw oog in de cirkel</div>
+            </div>
+        </div>
         <button id="scan">Start Iris Scan</button>
-        <canvas id="canvas" style="display:none;"></canvas>
         <div id="result"></div>
     </div>
     <footer>

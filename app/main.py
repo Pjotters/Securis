@@ -1,61 +1,70 @@
-from flask import Flask, request, jsonify # type: ignore
-import cv2 # type: ignore
-import numpy as np # type: ignore
-from tensorflow.keras.models import load_model # type: ignore
+from flask import Flask, request, jsonify, render_template
+import numpy as np
+from improved_detector import ImprovedIrisDetector
+from db import SimpleDB
 import base64
+import cv2
 import os
 
 app = Flask(__name__)
+detector = ImprovedIrisDetector()
+db = SimpleDB()
 
-# Controleer of het model bestaat voordat we het laden
-model_path = 'iris_recognition_model.h5'
-if os.path.exists(model_path):
-    iris_model = load_model(model_path)
-else:
-    print(f"Waarschuwing: Model bestand niet gevonden op pad: {model_path}")
-    iris_model = None
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-def preprocess_iris_image(image_data):
-    # Decodeer base64 image
-    img_bytes = base64.b64decode(image_data.split(',')[1])
-    nparr = np.frombuffer(img_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    
-    # Detecteer de iris
-    eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
-    eyes = eye_cascade.detectMultiScale(img, 1.3, 5)
-    
-    if len(eyes) > 0:
-        (x, y, w, h) = eyes[0]
-        iris = img[y:y+h, x:x+w]
-        iris = cv2.resize(iris, (64, 64))
-        return iris
-    return None
+@app.route('/register')
+def register():
+    return render_template('register.html')
+
+@app.route('/api/register-iris', methods=['POST'])
+def register_iris():
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        image_data = data.get('image')
+
+        # Decodeer en verwerk de afbeelding
+        img_bytes = base64.b64decode(image_data.split(',')[1])
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # Detecteer en extraheer features
+        iris = detector.detect_and_process(img)
+        if iris is not None:
+            features = detector.extract_features(iris)
+            db.add_iris(user_id, features)
+            return jsonify({'success': True, 'message': 'Iris geregistreerd'})
+        
+        return jsonify({'success': False, 'message': 'Geen iris gedetecteerd'})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/verify-iris', methods=['POST'])
 def verify_iris():
-    if iris_model is None:
-        return jsonify({
-            'authorized': False,
-            'message': 'Model niet beschikbaar'
-        })
-    
-    data = request.json
-    iris_image = preprocess_iris_image(data['image'])
-    
-    if iris_image is None:
-        return jsonify({'authorized': False, 'message': 'Geen iris gedetecteerd'})
-    
-    # Voorspelling maken met het model
-    prediction = iris_model.predict(np.array([iris_image]))
-    
-    # Hier zou je normaal gesproken de voorspelling vergelijken met je database
-    authorized = prediction[0] > 0.5
-    
-    return jsonify({
-        'authorized': authorized,
-        'message': 'Toegang verleend' if authorized else 'Toegang geweigerd'
-    })
+    try:
+        data = request.json
+        image_data = data.get('image')
+
+        # Decodeer en verwerk de afbeelding
+        img_bytes = base64.b64decode(image_data.split(',')[1])
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # Detecteer en extraheer features
+        iris = detector.detect_and_process(img)
+        if iris is not None:
+            features = detector.extract_features(iris)
+            user_id = db.verify_iris(features)
+            if user_id:
+                return jsonify({'authorized': True, 'user_id': user_id})
+        
+        return jsonify({'authorized': False, 'message': 'Toegang geweigerd'})
+
+    except Exception as e:
+        return jsonify({'authorized': False, 'message': str(e)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080))) 
+    app.run(debug=True) 
