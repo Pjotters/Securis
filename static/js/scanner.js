@@ -3,6 +3,9 @@ let canvas = document.getElementById('canvas');
 let result = document.querySelector('.scan-status');
 let scanButton = document.getElementById('scan');
 
+// API endpoint configuratie
+const API_BASE_URL = 'https://securis-m7bb.onrender.com'; // Update dit met je Render URL
+
 // Start camera
 async function startCamera() {
     try {
@@ -23,7 +26,7 @@ async function verifyIris() {
     const imageData = canvas.toDataURL('image/jpeg');
     
     try {
-        const response = await fetch('/api/verify-iris', {
+        const response = await fetch(`${API_BASE_URL}/api/verify-iris`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,5 +42,7 @@ async function verifyIris() {
 }
 
 // Event listeners
-document.addEventListener('DOMContentLoaded', startCamera);
-scanButton.addEventListener('click', verifyIris); 
+document.addEventListener('DOMContentLoaded', () => {
+    startCamera();
+    scanButton.addEventListener('click', verifyIris);
+}); 

@@ -7,8 +7,10 @@ import cv2
 import os
 from api_security import rate_limit
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Dit staat cross-origin requests toe
 detector = ImprovedIrisDetector()
 db = SimpleDB()
 

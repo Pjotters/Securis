@@ -3,6 +3,9 @@ let canvas = document.getElementById('canvas');
 let result = document.querySelector('.scan-status');
 let registerBtn = document.getElementById('registerBtn');
 
+// API endpoint configuratie
+const API_BASE_URL = 'https://securis-m7bb.onrender.com'; // Update dit met je Render URL
+
 // Start camera
 async function startCamera() {
     try {
@@ -27,7 +30,7 @@ async function registerIris() {
     const imageData = canvas.toDataURL('image/jpeg');
     
     try {
-        const response = await fetch('/api/register-iris', {
+        const response = await fetch(`${API_BASE_URL}/api/register-iris`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
