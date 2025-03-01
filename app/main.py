@@ -7,8 +7,13 @@ import os
 
 app = Flask(__name__)
 
-# Laad het vooraf getrainde model
-iris_model = load_model('iris_recognition_model.h5')
+# Controleer of het model bestaat voordat we het laden
+model_path = 'iris_recognition_model.h5'
+if os.path.exists(model_path):
+    iris_model = load_model(model_path)
+else:
+    print(f"Waarschuwing: Model bestand niet gevonden op pad: {model_path}")
+    iris_model = None
 
 def preprocess_iris_image(image_data):
     # Decodeer base64 image
@@ -29,6 +34,12 @@ def preprocess_iris_image(image_data):
 
 @app.route('/api/verify-iris', methods=['POST'])
 def verify_iris():
+    if iris_model is None:
+        return jsonify({
+            'authorized': False,
+            'message': 'Model niet beschikbaar'
+        })
+    
     data = request.json
     iris_image = preprocess_iris_image(data['image'])
     
