@@ -2,9 +2,49 @@
 <html>
 <head>
     <title>Securis - Iris Scanner</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .video-container {
+            margin: 20px 0;
+        }
+        #video {
+            width: 100%;
+            max-width: 640px;
+        }
+        #canvas {
+            display: none;
+        }
+        .scan-status {
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welkom bij Securis</h1>
-    <p>De iris scanner API is actief.</p>
+    <div class="container">
+        <h1>Securis Iris Scanner</h1>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <button id="scan">Scan Iris</button>
+        <button id="registerBtn">Registreer Nieuwe Iris</button>
+        
+        <div class="scan-status"></div>
+    </div>
+
+    <script src="/static/js/scanner.js"></script>
+    <script src="/static/js/register.js"></script>
+    <script>
+        // Start camera wanneer de pagina laadt
+        document.addEventListener('DOMContentLoaded', startCamera);
+    </script>
 </body>
 </html> 
