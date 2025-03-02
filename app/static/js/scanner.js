@@ -3,9 +3,7 @@ let canvas = document.getElementById('canvas');
 let result = document.querySelector('.scan-status');
 let scanButton = document.getElementById('scan');
 
-// API endpoint configuratie
-const API_BASE_URL = 'https://securis-m7bb.onrender.com'; // Update dit met je Render URL
-
+// Start camera
 // Start camera
 async function startCamera() {
     try {
