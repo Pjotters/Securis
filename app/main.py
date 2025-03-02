@@ -9,7 +9,9 @@ import os
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, 
+    template_folder=os.path.abspath('app/templates'),
+    static_folder=os.path.abspath('app/static'))
 CORS(app, resources={
     r"/api/*": {
         "origins": ["https://pjotters.github.io"],
@@ -90,4 +92,5 @@ def verify_iris():
         return jsonify({'authorized': False, 'message': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port) 
