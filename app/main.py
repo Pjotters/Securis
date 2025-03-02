@@ -11,6 +11,7 @@ from flask_cors import CORS
 from app.detectors.azure_iris_detector import AzureIrisDetector
 from app.utils.db import IrisDB
 from detectors.enhanced_free_detector import EnhancedFreeDetector
+from app.auth_service import AuthService
 
 app = Flask(__name__, 
     template_folder=os.path.abspath('app/templates'),
@@ -27,6 +28,7 @@ CORS(app, resources={
 iris_detector = EnhancedFreeDetector()
 backup_detector = ImprovedIrisDetector()
 db = IrisDB()
+auth_service = AuthService()
 
 SWAGGER_URL = '/api/docs'
 API_URL = '/static/swagger.json'
@@ -107,6 +109,45 @@ def verify_iris():
             'success': False, 
             'message': f'Verificatie fout: {str(e)}'
         })
+
+@app.route('/api/login-with-iris', methods=['POST'])
+@rate_limit
+def login_with_iris():
+    try:
+        data = request.json
+        image_data = data.get('image')
+        
+        # Decodeer en verwerk de afbeelding
+        img_bytes = base64.b64decode(image_data.split(',')[1])
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # Iris verificatie (zoals in verify_iris)
+        iris = iris_detector.detect_and_process(img)
+        if iris is None:
+            return jsonify({
+                'success': False,
+                'message': 'Geen iris gedetecteerd'
+            })
+            
+        features = iris_detector.extract_features(iris)
+        user_id = db.find_matching_iris(features)
+        
+        if user_id:
+            # Genereer auth token
+            token = auth_service.create_auth_token(user_id)
+            return jsonify({
+                'success': True,
+                'token': token,
+                'user_id': user_id
+            })
+            
+        return jsonify({
+            'success': False,
+            'message': 'Gebruiker niet herkend'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/health')
 def health_check():
