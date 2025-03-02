@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welkom op het Dashboard</h1>
+        <p>Je bent succesvol ingelogd met je iris!</p>
+        <button onclick="logout()" class="primary-button">Uitloggen</button>
+    </div>
+    <script src="js/auth.js"></script>
+    <script>
+        // Check of gebruiker is ingelogd
+        requireAuth();
+    </script>
+</body>
+</html>

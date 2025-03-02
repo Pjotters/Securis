@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Iris Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Login met Iris Scan</h1>
+        <div class="scan-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none"></canvas>
+            <div class="scan-overlay">
+                <div class="scan-circle"></div>
+                <div id="status" class="scan-status">Camera wordt gestart...</div>
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="loginBtn" class="primary-button">Login met Iris</button>
+            <a href="register.html" class="secondary-button">Registreer Nieuwe Iris</a>
+        </div>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/iris-login.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
