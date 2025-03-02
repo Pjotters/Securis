@@ -1,35 +1,46 @@
-import json
-import os
+from pymongo import MongoClient
 import numpy as np
+from datetime import datetime
 
-class SimpleDB:
+class IrisDB:
     def __init__(self):
-        self.db_file = 'iris_features.json'
-        self.features = self.load_db()
-    
-    def load_db(self):
-        if os.path.exists(self.db_file):
-            with open(self.db_file, 'r') as f:
-                return json.load(f)
-        return {}
-    
-    def save_db(self):
-        with open(self.db_file, 'w') as f:
-            json.dump(self.features, f)
-    
-    def add_iris(self, user_id, features):
-        self.features[user_id] = features.tolist()
-        self.save_db()
-    
-    def verify_iris(self, features):
-        min_distance = float('inf')
-        matched_id = None
+        username = "Pieter"
+        password = "PieterAPI"  # Vervang dit met je wachtwoord
+        cluster_url = "securis.rjv0y.mongodb.net"
         
-        for user_id, stored_features in self.features.items():
-            dist = np.linalg.norm(features - np.array(stored_features))
-            if dist < min_distance:
-                min_distance = dist
-                matched_id = user_id
-                
-        # Threshold voor verificatie
-        return matched_id if min_distance < 0.3 else None 
+        connection_string = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority&appName=Securis"
+        self.client = MongoClient(connection_string)
+        self.db = self.client.iris_scanner
+        self.iris_collection = self.db.iris_features
+
+    def add_iris(self, user_id, features, metadata=None):
+        document = {
+            "user_id": user_id,
+            "features": features.tolist(),
+            "created_at": datetime.utcnow(),
+            "metadata": metadata or {}
+        }
+        self.iris_collection.insert_one(document)
+
+    def find_matching_iris(self, query_features, threshold=0.85):
+        # Zoek alle opgeslagen irissen
+        stored_irises = self.iris_collection.find()
+        
+        best_match = None
+        highest_similarity = threshold
+
+        for iris in stored_irises:
+            stored_features = np.array(iris['features'])
+            similarity = self.calculate_similarity(query_features, stored_features)
+            
+            if similarity > highest_similarity:
+                highest_similarity = similarity
+                best_match = iris
+
+        return best_match['user_id'] if best_match else None
+
+    @staticmethod
+    def calculate_similarity(features1, features2):
+        return np.dot(features1, features2) / (
+            np.linalg.norm(features1) * np.linalg.norm(features2)
+        ) 

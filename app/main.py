@@ -8,6 +8,9 @@ import cv2
 import os
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
+from app.detectors.azure_iris_detector import AzureIrisDetector
+from app.utils.db import IrisDB
+from detectors.enhanced_free_detector import EnhancedFreeDetector
 
 app = Flask(__name__, 
     template_folder=os.path.abspath('app/templates'),
@@ -19,8 +22,11 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
-detector = ImprovedIrisDetector()
-db = SimpleDB()
+
+# Initialize beide detectoren
+iris_detector = EnhancedFreeDetector()
+backup_detector = ImprovedIrisDetector()
+db = IrisDB()
 
 SWAGGER_URL = '/api/docs'
 API_URL = '/static/swagger.json'
@@ -55,9 +61,9 @@ def register_iris():
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         # Detecteer en extraheer features
-        iris = detector.detect_and_process(img)
+        iris = iris_detector.detect_and_process(img)
         if iris is not None:
-            features = detector.extract_features(iris)
+            features = iris_detector.extract_features(iris)
             db.add_iris(user_id, features)
             return jsonify({'success': True, 'message': 'Iris geregistreerd'})
         
@@ -79,17 +85,28 @@ def verify_iris():
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         # Detecteer en extraheer features
-        iris = detector.detect_and_process(img)
-        if iris is not None:
-            features = detector.extract_features(iris)
-            user_id = db.verify_iris(features)
-            if user_id:
-                return jsonify({'authorized': True, 'user_id': user_id})
+        iris = iris_detector.detect_and_process(img)
+        if iris is None:
+            return jsonify({
+                'success': False, 
+                'message': 'Geen iris gedetecteerd'
+            })
+
+        # Extract features en vergelijk met database
+        features = iris_detector.extract_features(iris)
+        match = db.find_matching_iris(features)
         
-        return jsonify({'authorized': False, 'message': 'Toegang geweigerd'})
+        return jsonify({
+            'success': True,
+            'authorized': match is not None,
+            'message': 'Iris herkend' if match else 'Iris niet herkend'
+        })
 
     except Exception as e:
-        return jsonify({'authorized': False, 'message': str(e)})
+        return jsonify({
+            'success': False, 
+            'message': f'Verificatie fout: {str(e)}'
+        })
 
 @app.route('/health')
 def health_check():

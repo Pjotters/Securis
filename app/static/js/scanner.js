@@ -24,27 +24,28 @@ async function verifyIris() {
         context.drawImage(video, 0, 0);
         
         const imageData = canvas.toDataURL('image/jpeg');
+        result.textContent = 'Bezig met scannen...';
         
         const response = await fetch(`${API_BASE_URL}/api/verify-iris`, {
             method: 'POST',
-            mode: 'cors',
-            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ image: imageData })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const data = await response.json();
-        result.textContent = data.authorized ? 'Toegang verleend' : 'Toegang geweigerd';
+        
+        if (data.success) {
+            result.textContent = data.authorized ? 
+                '✅ Toegang verleend - Iris herkend' : 
+                '❌ Toegang geweigerd - Iris niet herkend';
+        } else {
+            result.textContent = '❌ ' + data.message;
+        }
     } catch (err) {
         console.error('Verificatie mislukt:', err);
-        result.textContent = 'Verificatie mislukt: ' + err.message;
+        result.textContent = '❌ Verificatie mislukt: ' + err.message;
     }
 }
 
