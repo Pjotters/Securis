@@ -1,21 +1,27 @@
 from functools import wraps
 from flask import request, jsonify
 import time
-from collections import defaultdict
 
 class RateLimiter:
-    def __init__(self, calls=15, period=60):
-        self.calls = calls  # aantal toegestane calls
-        self.period = period  # periode in seconden
-        self.timestamps = defaultdict(list)
-    
-    def is_allowed(self, key):
-        now = time.time()
-        self.timestamps[key] = [ts for ts in self.timestamps[key] if ts > now - self.period]
-        if len(self.timestamps[key]) < self.calls:
-            self.timestamps[key].append(now)
-            return True
-        return False
+    def __init__(self, limit=5, window=60):
+        self.limit = limit
+        self.window = window
+        self.requests = {}
+
+    def is_allowed(self, ip):
+        current_time = time.time()
+        if ip not in self.requests:
+            self.requests[ip] = []
+        
+        # Verwijder oude verzoeken
+        self.requests[ip] = [req_time for req_time in self.requests[ip] 
+                           if current_time - req_time < self.window]
+        
+        if len(self.requests[ip]) >= self.limit:
+            return False
+            
+        self.requests[ip].append(current_time)
+        return True
 
 rate_limiter = RateLimiter()
 

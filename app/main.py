@@ -2,10 +2,10 @@ from flask import Flask, request, jsonify, render_template
 import numpy as np
 from app.detectors.improved_detector import ImprovedIrisDetector
 from app.utils.db import SimpleDB
+from app.api_security import rate_limit
 import base64
 import cv2
 import os
-from api_security import rate_limit
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 
