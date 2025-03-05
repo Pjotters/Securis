@@ -10,7 +10,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 from app.detectors.azure_iris_detector import AzureIrisDetector
 from app.utils.logger import SecurityLogger
-from detectors.enhanced_free_detector import EnhancedFreeDetector
+from app.detectors.enhanced_free_detector import EnhancedFreeDetector
 from app.auth_service import AuthService
 
 app = Flask(__name__, 
