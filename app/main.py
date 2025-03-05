@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
 from app.detectors.improved_detector import ImprovedIrisDetector
-from app.utils.db import SimpleDB
+from app.utils.db import IrisDB
 from app.api_security import rate_limit
 import base64
 import cv2
@@ -9,10 +9,9 @@ import os
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_cors import CORS
 from app.detectors.azure_iris_detector import AzureIrisDetector
-from app.utils.db import IrisDB
+from app.utils.logger import SecurityLogger
 from detectors.enhanced_free_detector import EnhancedFreeDetector
 from app.auth_service import AuthService
-from app.utils.logger import SecurityLogger
 
 app = Flask(__name__, 
     template_folder=os.path.abspath('app/templates'),
