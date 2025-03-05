@@ -4,11 +4,16 @@ import os
 
 class SecurityLogger:
     def __init__(self):
-        # Configureer logging
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+            
+        log_file = os.path.join(log_dir, f"security_{datetime.now():%y%m%d}.log")
+        
         logging.basicConfig(
-            filename=f'logs/security_{datetime.now().strftime("%Y%m")}.log',
+            filename=log_file,
             level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s'
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         
     def log_login_attempt(self, user_id, success, method, ip):

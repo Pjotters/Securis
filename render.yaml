@@ -3,6 +3,7 @@ services:
     name: securis
     runtime: python
     buildCommand: |
+      mkdir -p logs
       pip install -r requirements.txt
       python -m pip install -e .
     startCommand: gunicorn app.main:app
