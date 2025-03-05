@@ -12,6 +12,7 @@ from app.detectors.azure_iris_detector import AzureIrisDetector
 from app.utils.db import IrisDB
 from detectors.enhanced_free_detector import EnhancedFreeDetector
 from app.auth_service import AuthService
+from app.utils.logger import SecurityLogger
 
 app = Flask(__name__, 
     template_folder=os.path.abspath('app/templates'),
@@ -29,6 +30,7 @@ iris_detector = EnhancedFreeDetector()
 backup_detector = ImprovedIrisDetector()
 db = IrisDB()
 auth_service = AuthService()
+logger = SecurityLogger()
 
 SWAGGER_URL = '/api/docs'
 API_URL = '/static/swagger.json'
@@ -134,6 +136,12 @@ def login_with_iris():
         user_id = db.find_matching_iris(features)
         
         if user_id:
+            logger.log_login_attempt(
+                user_id=user_id,
+                success=True,
+                method='iris',
+                ip=request.remote_addr
+            )
             # Genereer auth token
             token = auth_service.create_auth_token(user_id)
             return jsonify({
@@ -142,9 +150,38 @@ def login_with_iris():
                 'user_id': user_id
             })
             
+        logger.log_login_attempt(
+            user_id='unknown',
+            success=False,
+            method='iris',
+            ip=request.remote_addr
+        )
         return jsonify({
             'success': False,
             'message': 'Gebruiker niet herkend'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/backup-login', methods=['POST'])
+@rate_limit
+def backup_login():
+    try:
+        data = request.json
+        backup_code = data.get('backup_code')
+        
+        # Controleer backup code in database
+        user = db.find_user_by_backup_code(backup_code)
+        if user:
+            token = auth_service.create_auth_token(user['user_id'])
+            return jsonify({
+                'success': True,
+                'token': token
+            })
+            
+        return jsonify({
+            'success': False,
+            'message': 'Ongeldige backup code'
         })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})

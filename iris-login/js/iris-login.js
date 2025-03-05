@@ -44,4 +44,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error(err);
         }
     };
+
+    // Voeg backup login toe aan bestaande login interface
+    const backupLoginBtn = document.createElement('button');
+    backupLoginBtn.textContent = 'Login met Backup Code';
+    backupLoginBtn.onclick = async () => {
+        const backupCode = prompt('Voer je backup code in:');
+        if (!backupCode) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/backup-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ backup_code: backupCode })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                localStorage.setItem('auth_token', data.token);
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('Ongeldige backup code');
+            }
+        } catch (err) {
+            console.error('Backup login mislukt:', err);
+        }
+    };
 });
