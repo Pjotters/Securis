@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import numpy as np
 from app.detectors.improved_detector import ImprovedIrisDetector
 from app.utils.db import IrisDB
@@ -188,6 +188,10 @@ def backup_login():
 @app.route('/health')
 def health_check():
     return jsonify({'status': 'healthy'})
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 port = int(os.environ.get('PORT', 10000))
 
