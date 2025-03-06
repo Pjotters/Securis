@@ -4,12 +4,15 @@ services:
     runtime: python
     buildCommand: |
       mkdir -p logs
+      pip install --upgrade pip
       pip install -r requirements.txt
       python -m pip install -e .
-    startCommand: gunicorn app.main:app --bind 0.0.0.0:$PORT --timeout 120
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app.main:app --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.18
       - key: PORT
-        value: 10000
-    env: python 
+        value: $PORT
+    env: python
+    healthCheckPath: /health
+    autoDeploy: true 
